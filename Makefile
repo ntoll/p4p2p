@@ -2,14 +2,13 @@ XARGS := xargs -0 $(shell test $$(uname) = Linux && echo -r)
 GREP_T_FLAG := $(shell test $$(uname) = Linux && echo -T)
 
 all:
-	@echo "\nThere is no default Makefile target right now."
-	@echo "Try:\n"
+	@echo "\nThere is no default Makefile target right now. Try:\n"
 	@echo "make clean - reset the project and remove auto-generated assets."
 	@echo "make pyflakes - run the PyFlakes code checker."
 	@echo "make pep8 - run the PEP8 style checker."
 	@echo "make test - run the test suite."
 	@echo "make check - run all the checkers and tests."
-	@echo "make docs - run sphinx to create project documentation."
+	@echo "make docs - run sphinx to create project documentation.\n"
 
 clean:
 	rm -rf dist docs/_build p4p2p/p4p2p.egg-info
@@ -31,7 +30,8 @@ test: clean
 	if [ $$status = 0 ]; \
 	then echo "\n\033[0;31m\033[1mWARNING!\033[0m\033[m\017"; \
 	echo "Missing test coverage (see report above).\n"; \
-	else echo "     .oO( Yay! 100% test coverage! )"; \
+	else echo "Mr.TestBot says...\n"; \
+	echo "     .oO( Yay! The tests pass with 100% coverage! )"; \
 	echo "  \ /"; \
 	echo " [O O]"; \
 	echo "d| _ |b"; \
