@@ -34,7 +34,7 @@ test: clean
 	else echo "     .oO( Yay! 100% test coverage! )"; \
 	echo "  \ /"; \
 	echo " [O O]"; \
-	echo "d|   |b"; \
+	echo "d| _ |b"; \
 	echo " _| |_\n"; \
 	fi
 
