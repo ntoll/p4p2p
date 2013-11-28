@@ -1,1 +1,4 @@
 sphinx
+twisted
+pyflakes
+pep8
