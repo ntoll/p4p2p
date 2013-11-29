@@ -1,7 +1,7 @@
 P4P2P - Platform for Peer-to-Peer
 =================================
 
-A small and simple framework for peer to peer applications.
+A small and simple framework for making peer to peer applications.
 
 There are two broad aspects to this framework:
 
@@ -15,6 +15,6 @@ Install the requirements::
 
     $ pip install -r requirements.txt
 
-The make command is a useful starting point...
+The make command is a useful starting point.
 
 More to follow...
