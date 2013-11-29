@@ -1,0 +1,9 @@
+In no particular order of importance:
+
+* Setup website and email at the p4p2p.net domain.
+* Cryptographic-signing of messaging (transplanted from the drogulus).
+* Global and named routing tables.
+* Connect nodes.
+* Encrypted inter-node communication.
+* Documentation.
+* Add more stuff to TODO ;-)
