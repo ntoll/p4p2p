@@ -42,6 +42,6 @@ check: pep8 pyflakes test
 
 docs: clean
 	$(MAKE) -C docs html
-	@echo "\nDocumentation can be viewed in your browser here:"
+	@echo "\nDocumentation can be found here:"
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"
