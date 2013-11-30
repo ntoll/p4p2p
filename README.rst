@@ -11,10 +11,15 @@ There are two broad aspects to this framework:
 Developer Setup
 +++++++++++++++
 
+Make a new virtualenv (see:
+http://virtualenvwrapper.readthedocs.org/en/latest/)::
+
+    $ mkvirtualenv p4p2p
+
 Install the requirements::
 
     $ pip install -r requirements.txt
 
-The make command is a useful starting point.
+The ``make`` command is a useful starting point.
 
 More to follow...
