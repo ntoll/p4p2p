@@ -2,3 +2,4 @@ sphinx
 twisted
 pyflakes
 pep8
+pycrypto
