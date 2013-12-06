@@ -8,7 +8,7 @@ setup(
     description='A platform for peer-to-peer application development.',
     long_description=open('README.rst').read(),
     author=open('AUTHORS').read(),
-    author_email='dev@p4p2p.net',
+    author_email='info@p4p2p.net',
     url='http://p4p2p.net/',
     package_dir={'': 'p4p2p'},
     packages=find_packages('p4p2p'),
