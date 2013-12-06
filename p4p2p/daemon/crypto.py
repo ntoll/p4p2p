@@ -4,8 +4,8 @@ Functions for signing and verifying messages sent between peers. Messages are
 represented by dict objects.
 """
 import time
-from Crypto.Hash import SHA512
 from types import NoneType
+from Crypto.Hash import SHA512
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
