@@ -1,5 +1,6 @@
-sphinx
-twisted
-pyflakes
+mock
 pep8
 pycrypto
+pyflakes
+sphinx
+twisted

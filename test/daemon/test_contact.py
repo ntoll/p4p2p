@@ -3,7 +3,7 @@
 Ensures details of contacts (peer nodes on the network) are represented
 correctly.
 """
-from p4p2p.daemon.peer import PeerNode
+from p4p2p.daemon.contact import PeerNode
 from p4p2p.version import get_version
 import unittest
 

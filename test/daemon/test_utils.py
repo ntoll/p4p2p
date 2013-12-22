@@ -5,7 +5,7 @@ as expected.
 """
 from p4p2p.daemon.utils import (long_to_hex, hex_to_long, distance,
                                 sort_peer_nodes)
-from p4p2p.daemon.peer import PeerNode
+from p4p2p.daemon.contact import PeerNode
 from p4p2p.daemon import constants
 from p4p2p.version import get_version
 import unittest
