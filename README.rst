@@ -22,6 +22,8 @@ Install the requirements::
 
     $ pip install -r requirements.txt
 
-The ``make`` command is a useful starting point.
+The ``make`` command is a useful starting point. If you type ``make check``
+and see a passing test suite followed by a coverage report then you should be
+set up all fine and dandy.
 
 More to follow...
