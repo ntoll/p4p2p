@@ -7,3 +7,4 @@ build/*
 dist/*
 _trial_temp
 p4p2p/p4p2p.egg-info/*
+.coverage

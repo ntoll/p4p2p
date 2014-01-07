@@ -3,4 +3,4 @@ pep8
 pycrypto
 pyflakes
 sphinx
-twisted
+coverage
