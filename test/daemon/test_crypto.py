@@ -64,9 +64,9 @@ class TestGetSignedMessage(unittest.TestCase):
         self.assertIn('timestamp', metadata)
         self.assertIsInstance(metadata['timestamp'], float)
         self.assertIn('public_key', metadata)
-        self.assertIsInstance(metadata['public_key'], basestring)
+        self.assertIsInstance(metadata['public_key'], str)
         self.assertIn('signature', metadata)
-        self.assertIsInstance(metadata['signature'], basestring)
+        self.assertIsInstance(metadata['signature'], str)
         self.assertEqual(3, len(metadata))
 
     def test_original_message_unaffected(self):
@@ -155,10 +155,10 @@ class TestGetHashFunction(unittest.TestCase):
         seed_hashes = []
         for k in sorted(to_hash):
             v = to_hash[k]
-            seed_hashes.append(sha512(k).hexdigest())
-            seed_hashes.append(sha512(v).hexdigest())
+            seed_hashes.append(sha512(k.encode('utf-8')).hexdigest())
+            seed_hashes.append(sha512(v.encode('utf-8')).hexdigest())
         seed = ''.join(seed_hashes)
-        expected = sha512(seed)
+        expected = sha512(seed.encode('utf-8'))
         actual = _get_hash(to_hash)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -172,9 +172,9 @@ class TestGetHashFunction(unittest.TestCase):
 
         seed_hashes = []
         for item in to_hash:
-            seed_hashes.append(sha512(item).hexdigest())
+            seed_hashes.append(sha512(item.encode('utf-8')).hexdigest())
         seed = ''.join(seed_hashes)
-        expected = sha512(seed)
+        expected = sha512(seed.encode('utf-8'))
         actual = _get_hash(to_hash)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -183,7 +183,7 @@ class TestGetHashFunction(unittest.TestCase):
         Ensure the hash of Python's None is actually a hash of 'null' (since
         this is the null value for JSON).
         """
-        expected = sha512('null')
+        expected = sha512(b'null')
         actual = _get_hash(None)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -192,7 +192,7 @@ class TestGetHashFunction(unittest.TestCase):
         Ensure hash of Python's True boolean value is a hash of 'true' (since
         this is the true value in JSON).
         """
-        expected = sha512('true')
+        expected = sha512(b'true')
         actual = _get_hash(True)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -201,7 +201,7 @@ class TestGetHashFunction(unittest.TestCase):
         Ensure hash of Python's False boolean value is a hash of 'false'
         (since this is the false value in JSON).
         """
-        expected = sha512('false')
+        expected = sha512(b'false')
         actual = _get_hash(False)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -209,7 +209,7 @@ class TestGetHashFunction(unittest.TestCase):
         """
         Ensure int values are hashed correctly.
         """
-        expected = sha512('12345')
+        expected = sha512(b'12345')
         actual = _get_hash(12345)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -217,7 +217,7 @@ class TestGetHashFunction(unittest.TestCase):
         """
         Ensure float values are hashed correctly.
         """
-        expected = sha512('12345.6789')
+        expected = sha512(b'12345.6789')
         actual = _get_hash(12345.6789)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -225,7 +225,7 @@ class TestGetHashFunction(unittest.TestCase):
         """
         Ensure long values are hashed correctly.
         """
-        expected = sha512('1234567890987654321234567890987654321')
+        expected = sha512(b'1234567890987654321234567890987654321')
         actual = _get_hash(1234567890987654321234567890987654321)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -233,7 +233,7 @@ class TestGetHashFunction(unittest.TestCase):
         """
         Strings are hashed correctly
         """
-        expected = sha512('foo')
+        expected = sha512(b'foo')
         actual = _get_hash('foo')
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
@@ -241,8 +241,8 @@ class TestGetHashFunction(unittest.TestCase):
         """
         Strings are hashed correctly
         """
-        expected = sha512(u'foo')
-        actual = _get_hash(u'foo')
+        expected = sha512(b'foo')
+        actual = _get_hash('foo')
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
     def test_get_hash_nested_structure(self):
@@ -262,11 +262,11 @@ class TestGetHashFunction(unittest.TestCase):
         }
         seed_hashes = []
         # REMEMBER - dict objects are ordered by key.
-        seed_hashes.append(sha512('baz').hexdigest())
+        seed_hashes.append(sha512(b'baz').hexdigest())
         seed_hashes.append(_get_hash(child_dict).hexdigest())
-        seed_hashes.append(sha512('foo').hexdigest())
+        seed_hashes.append(sha512(b'foo').hexdigest())
         seed_hashes.append(_get_hash(child_list).hexdigest())
         seed = ''.join(seed_hashes)
-        expected = sha512(seed)
+        expected = sha512(seed.encode('utf-8'))
         actual = _get_hash(to_hash)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())

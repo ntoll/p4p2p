@@ -3,8 +3,7 @@
 Buckets in the routing table that contain peer nodes.
 """
 
-from constants import K
-from utils import hex_to_long
+from .constants import K
 
 
 class BucketFull(Exception):
@@ -112,7 +111,7 @@ class Bucket(object):
         bucket.
         """
         if isinstance(key, str):
-            key = hex_to_long(key)
+            key = int(key, 0)
         return self.range_min <= key < self.range_max
 
     def __len__(self):

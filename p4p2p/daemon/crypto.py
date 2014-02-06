@@ -4,7 +4,7 @@ Functions for signing and verifying messages sent between peers. Messages are
 represented by dict objects.
 """
 import time
-from types import NoneType
+import base64
 from Crypto.Hash import SHA512
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
@@ -25,7 +25,8 @@ def get_signed_message(message, public_key, private_key):
     root_hash = _get_hash(signed_message)
     key = RSA.importKey(private_key)
     signer = PKCS1_v1_5.new(key)
-    signed_message['_p4p2p']['signature'] = signer.sign(root_hash)
+    sig = base64.encodebytes(signer.sign(root_hash)).decode('utf-8')
+    signed_message['_p4p2p']['signature'] = sig
     return signed_message
 
 
@@ -35,7 +36,8 @@ def verify_message(message):
     """
     try:
         msg_no_sig = message.copy()
-        signature = msg_no_sig['_p4p2p']['signature']
+        raw_sig = msg_no_sig['_p4p2p']['signature']
+        signature = base64.decodebytes(raw_sig.encode('utf-8'))
         public_key = RSA.importKey(msg_no_sig['_p4p2p']['public_key'])
         del msg_no_sig['_p4p2p']['signature']
         root_hash = _get_hash(msg_no_sig)
@@ -60,16 +62,15 @@ def _get_hash(obj):
             hash_list.append(_get_hash(k).hexdigest())
             hash_list.append(_get_hash(obj[k]).hexdigest())
         seed = ''.join(hash_list)
-        return SHA512.new(seed)
     elif obj_type is list:
         hash_list = []
         for item in obj:
             hash_list.append(_get_hash(item).hexdigest())
         seed = ''.join(hash_list)
-        return SHA512.new(seed)
-    elif obj_type is NoneType:
-        return SHA512.new('null')
     elif obj_type is bool:
-        return SHA512.new(str(obj).lower())
+        seed = str(obj).lower()
+    elif obj is None:
+        seed = 'null'
     else:
-        return SHA512.new(str(obj))
+        seed = str(obj)
+    return SHA512.new(seed.encode('utf-8'))

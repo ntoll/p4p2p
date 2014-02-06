@@ -45,8 +45,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'P4P2P'
-copyright = u'2013, the P4P2P authors'
+project = 'P4P2P'
+copyright = '2013-2014, the P4P2P authors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -190,8 +190,8 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'P4P2P.tex', u'P4P2P Documentation',
-     u'the P4P2P authors', 'manual'),
+    ('index', 'P4P2P.tex', 'P4P2P Documentation',
+     'the P4P2P authors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -220,8 +220,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'p4p2p', u'P4P2P Documentation',
-     [u'the P4P2P authors'], 1)
+    ('index', 'p4p2p', 'P4P2P Documentation',
+     ['the P4P2P authors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -234,8 +234,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'P4P2P', u'P4P2P Documentation',
-     u'the P4P2P authors', 'P4P2P',
+    ('index', 'P4P2P', 'P4P2P Documentation',
+     'the P4P2P authors', 'P4P2P',
      'A small and simple framework for making peer-to-peer applications.',
      'Miscellaneous'),
 ]
@@ -253,10 +253,10 @@ texinfo_documents = [
 # -- Options for Epub output ------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'P4P2P'
-epub_author = u'the P4P2P authors'
-epub_publisher = u'the P4P2P authors'
-epub_copyright = u'2013, the P4P2P authors'
+epub_title = 'P4P2P'
+epub_author = 'the P4P2P authors'
+epub_publisher = 'the P4P2P authors'
+epub_copyright = '2013-2014, the P4P2P authors'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

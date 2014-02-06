@@ -35,15 +35,15 @@ class TestPeerNode(unittest.TestCase):
         If the ID is passed in as a long value ensure it's translated to the
         correct string representation of the hex version.
         """
-        network_id = 12345L
+        network_id = 12345
         address = '192.168.0.1'
         port = 9999
         version = get_version()
         last_seen = 123
         contact = PeerNode(network_id, address, port, version, last_seen)
-        expected = '09'
+        expected = hex(12345)
         self.assertEqual(expected, contact.network_id)
-        self.assertEqual(12345L, long(contact.network_id.encode('hex'), 16))
+        self.assertEqual(12345, int(contact.network_id, 0))
 
     def test_init_with_int_id(self):
         """
@@ -56,9 +56,9 @@ class TestPeerNode(unittest.TestCase):
         version = get_version()
         last_seen = 123
         contact = PeerNode(network_id, address, port, version, last_seen)
-        expected = '09'
+        expected = hex(12345)
         self.assertEqual(expected, contact.network_id)
-        self.assertEqual(12345L, long(contact.network_id.encode('hex'), 16))
+        self.assertEqual(12345, int(contact.network_id, 0))
 
     def test_eq(self):
         """

@@ -2,7 +2,6 @@
 """
 Defines a peer node on the network.
 """
-from utils import long_to_hex
 
 
 class PeerNode(object):
@@ -18,8 +17,8 @@ class PeerNode(object):
         contact (defaults to 0). The network id, if passed in as a numeric
         value, will be converted into a hexadecimal string.
         """
-        if isinstance(network_id, long) or isinstance(network_id, int):
-            self.network_id = long_to_hex(network_id)
+        if isinstance(network_id, int):
+            self.network_id = hex(network_id)
         else:
             self.network_id = network_id
         self.ip_address = ip_address
@@ -38,7 +37,7 @@ class PeerNode(object):
         """
         if isinstance(other, PeerNode):
             return self.network_id == other.network_id
-        elif isinstance(other, basestring):
+        elif isinstance(other, str):
             return self.network_id == other
         else:
             return False

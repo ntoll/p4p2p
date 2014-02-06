@@ -229,7 +229,7 @@ class TestBucket(unittest.TestCase):
         correctly, before testing if it's within range.
         """
         bucket = Bucket(1, 66)
-        self.assertTrue(bucket.key_in_range('A'))
+        self.assertTrue(bucket.key_in_range('0xA'))
 
     def test_len(self):
         """

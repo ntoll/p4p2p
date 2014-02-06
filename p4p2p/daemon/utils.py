@@ -3,41 +3,16 @@
 Contains generic utillity functions used in various different parts of
 Drogulus.
 """
-from constants import K
-
-
-def long_to_hex(raw):
-    """
-    Given a raw numeric value (like a node's network ID for example) returns
-    it expressed as a hexadecimal string.
-    """
-    # Turn it into hex string (remembering to drop the '0x' at the start).
-    as_hex = hex(raw)[2:]
-    # If the integer is 'long' knock off the 'L'.
-    if as_hex[-1] == 'L':
-        as_hex = as_hex[:-1]
-    # If required, correct length by appending 'padding' zeros.
-    if len(as_hex) % 2 != 0:
-        as_hex = '0' + as_hex
-    as_hex = as_hex.decode('hex')
-    return as_hex
-
-
-def hex_to_long(raw):
-    """
-    Given a hexadecimal string representation of a number (like a key or
-    node's ID for example) returns the numeric (long) value.
-    """
-    return long(raw.encode('hex'), 16)
+from .constants import K
 
 
 def distance(key_one, key_two):
     """
-    Calculate the XOR result between two string variables returned as a long
-    type value.
+    Calculate the XOR result between two string representations of hex values.
+    Returned as an int.
     """
-    val_key_one = hex_to_long(key_one)
-    val_key_two = hex_to_long(key_two)
+    val_key_one = int(key_one, 0)
+    val_key_two = int(key_two, 0)
     return val_key_one ^ val_key_two
 
 

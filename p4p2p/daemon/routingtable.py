@@ -5,9 +5,9 @@ Code to implement routing tables.
 
 import time
 import random
-import constants
-from bucket import BucketFull, Bucket
-from utils import long_to_hex, hex_to_long, sort_peer_nodes
+from . import constants
+from .bucket import BucketFull, Bucket
+from .utils import sort_peer_nodes
 
 
 class RoutingTable(object):
@@ -42,7 +42,7 @@ class RoutingTable(object):
         string.
         """
         if isinstance(key, str):
-            key = hex_to_long(key)
+            key = int(key, 0)
         # Bound check for key too small.
         if key < 0:
             raise ValueError('Key out of range')
@@ -58,7 +58,7 @@ class RoutingTable(object):
         """
         keyValue = random.randrange(self._buckets[bucket_index].range_min,
                                     self._buckets[bucket_index].range_max)
-        return long_to_hex(keyValue)
+        return hex(keyValue)
 
     def _split_bucket(self, old_bucket_index):
         """
@@ -67,8 +67,8 @@ class RoutingTable(object):
         """
         # Resize the range of the current (old) bucket.
         old_bucket = self._buckets[old_bucket_index]
-        split_point = old_bucket.range_max - (
-            old_bucket.range_max - old_bucket.range_min) / 2
+        split_point = int(old_bucket.range_max - (
+            old_bucket.range_max - old_bucket.range_min) / 2)
         # Create a new bucket to cover the range split off from the old
         # bucket.
         new_bucket = Bucket(split_point, old_bucket.range_max)

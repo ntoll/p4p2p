@@ -3,8 +3,7 @@
 Ensures the generic functions used in various places within the daemon work
 as expected.
 """
-from p4p2p.daemon.utils import (long_to_hex, hex_to_long, distance,
-                                sort_peer_nodes)
+from p4p2p.daemon.utils import distance, sort_peer_nodes
 from p4p2p.daemon.contact import PeerNode
 from p4p2p.daemon import constants
 from p4p2p.version import get_version
@@ -22,29 +21,13 @@ class TestUtils(unittest.TestCase):
         """
         self.version = get_version()
 
-    def test_long_to_hex(self):
-        """
-        Ensure a long number produces the correct result.
-        """
-        raw = 123456789L
-        result = long_to_hex(raw)
-        self.assertEqual(raw, long(result.encode('hex'), 16))
-
-    def test_hex_to_long(self):
-        """
-        Ensure a valid hex value produces the correct result.
-        """
-        raw = 'abcdef0123456789'
-        result = hex_to_long(raw)
-        self.assertEqual(raw, long_to_hex(result))
-
     def test_distance(self):
         """
         Sanity check to ensure the XOR'd values return the correct distance.
         """
-        key1 = 'abc'
-        key2 = 'xyz'
-        expected = 1645337L
+        key1 = '0xdeadbeef'
+        key2 = '0xbeefdead'
+        expected = int(key1, 0) ^ int(key2, 0)
         actual = distance(key1, key2)
         self.assertEqual(expected, actual)
 
@@ -59,7 +42,7 @@ class TestUtils(unittest.TestCase):
             contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
                                0)
             contacts.append(contact)
-        target_key = long_to_hex(2 ** 256)
+        target_key = hex(2 ** 256)
         result = sort_peer_nodes(contacts, target_key)
 
         # Ensure results are in the correct order.
@@ -81,6 +64,6 @@ class TestUtils(unittest.TestCase):
             contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
                                0)
             contacts.append(contact)
-        target_key = long_to_hex(2 ** 256)
+        target_key = hex(2 ** 256)
         result = sort_peer_nodes(contacts, target_key)
         self.assertEqual(constants.K, len(result))

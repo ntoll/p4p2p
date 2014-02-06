@@ -7,7 +7,7 @@ from p4p2p.daemon.routingtable import RoutingTable
 from p4p2p.daemon.contact import PeerNode
 from p4p2p.daemon.bucket import Bucket
 from p4p2p.daemon import constants
-from p4p2p.daemon.utils import long_to_hex, distance
+from p4p2p.daemon.utils import distance
 from p4p2p.version import get_version
 import unittest
 import time
@@ -29,7 +29,7 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures an object is created as expected.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Ensure the initial bucket is created.
         self.assertEqual(1, len(r._buckets))
@@ -41,10 +41,10 @@ class TestRoutingTable(unittest.TestCase):
         Ensures the expected index is returned when only a single bucket
         exists.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # a simple test with only one bucket in the routing table.
-        test_key = 'abc123'
+        test_key = '0xabc123'
         expected_index = 0
         actual_index = r._bucket_index(test_key)
         self.assertEqual(expected_index, actual_index)
@@ -53,10 +53,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures the expected index is returned when multiple buckets exist.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         r._split_bucket(0)
-        split_point = (2 ** 512) / 2
+        split_point = int((2 ** 512) / 2)
         lower_key = split_point - 1
         higher_key = split_point + 1
         expected_lower_index = 0
@@ -71,10 +71,10 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that the specified key can be expressed as both a string
         and integer value.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # key as a string
-        test_key = 'abc123'
+        test_key = '0xabc123'
         expected_index = 0
         actual_index = r._bucket_index(test_key)
         self.assertEqual(expected_index, actual_index)
@@ -88,7 +88,7 @@ class TestRoutingTable(unittest.TestCase):
         If the requested id is not within the range of the keyspace then a
         ValueError should be raised.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Populate the routing table with contacts.
         for i in range(512):
@@ -107,26 +107,12 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures the returned key is within the expected bucket range.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         bucket = Bucket(1, 2)
         r._buckets[0] = bucket
         expected = 1
-        actual = int(r._random_key_in_bucket_range(0).encode('hex'), 16)
-        self.assertEqual(expected, actual)
-
-    def test_random_key_in_bucket_range_long(self):
-        """
-        Ensures that random_key_in_bucket_range works with large numbers.
-        """
-        minimum = 978675645342314253647586978
-        maximum = 978675645342314253647586979
-        parent_node_id = 'abc'
-        r = RoutingTable(parent_node_id)
-        bucket = Bucket(minimum, maximum)
-        r._buckets[0] = bucket
-        expected = minimum
-        actual = int(r._random_key_in_bucket_range(0).encode('hex'), 16)
+        actual = int(r._random_key_in_bucket_range(0), 0)
         self.assertEqual(expected, actual)
 
     def test_split_bucket(self):
@@ -134,16 +120,16 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that the correct bucket is split in two and that the contacts
         are found in the right place.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        bucket = Bucket(0, 10)
-        contact1 = PeerNode(2, '192.168.0.1', 9999, 0)
+        bucket = Bucket(0, 100)
+        contact1 = PeerNode(20, '192.168.0.1', 9999, 0)
         bucket.add_contact(contact1)
-        contact2 = PeerNode(4, '192.168.0.2', 8888, 0)
+        contact2 = PeerNode(40, '192.168.0.2', 8888, 0)
         bucket.add_contact(contact2)
-        contact3 = PeerNode(6, '192.168.0.3', 8888, 0)
+        contact3 = PeerNode(60, '192.168.0.3', 8888, 0)
         bucket.add_contact(contact3)
-        contact4 = PeerNode(8, '192.168.0.4', 8888, 0)
+        contact4 = PeerNode(80, '192.168.0.4', 8888, 0)
         bucket.add_contact(contact4)
         r._buckets[0] = bucket
         # Sanity check
@@ -193,9 +179,9 @@ class TestRoutingTable(unittest.TestCase):
         Ensures a misbehaving peer is correctly blacklisted. The remove_contact
         method is called and the contact's id is added to the _blacklist set.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact = PeerNode('abc', '192.168.0.1', 9999, 0)
+        contact = PeerNode('0xdeadbeef', '192.168.0.1', 9999, 0)
         r.remove_contact = MagicMock()
         r.blacklist(contact)
         r.remove_contact.called_once_with(contact, True)
@@ -206,9 +192,9 @@ class TestRoutingTable(unittest.TestCase):
         If the newly discovered contact is, in fact, this node then it's not
         added to the routing table.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact = PeerNode('abc', '192.168.0.1', 9999, 0)
+        contact = PeerNode('0xdeadbeef', '192.168.0.1', 9999, 0)
         r.add_contact(contact)
         self.assertEqual(len(r._buckets[0]), 0)
 
@@ -217,7 +203,7 @@ class TestRoutingTable(unittest.TestCase):
         If the newly discovered contact is, in fact, already in the local
         node's blacklist then ensure it doesn't get re-added.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         contact1 = PeerNode(2, '192.168.0.1', 9999, 0)
         contact2 = PeerNode(4, '192.168.0.2', 9999, 0)
@@ -232,7 +218,7 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that a newly discovered node in the network is added to the
         correct bucket in the routing table.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         contact1 = PeerNode(2, '192.168.0.1', 9999, 0)
         contact2 = PeerNode(4, '192.168.0.2', 9999, 0)
@@ -246,7 +232,7 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that newly discovered nodes are added to the appropriate
         bucket given a bucket split.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         for i in range(20):
             contact = PeerNode(i, '192.168.0.%d' % i, 9999, self.version, 0)
@@ -264,7 +250,7 @@ class TestRoutingTable(unittest.TestCase):
         Checks if a bucket is full and a new contact within the full bucket's
         range is added then it gets put in the replacement cache.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket
         for i in range(20):
@@ -283,22 +269,21 @@ class TestRoutingTable(unittest.TestCase):
         oldest contact within the cache is replaced with the new contact that
         was just seen.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
-            contact = PeerNode(str(i), "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(i, "192.168.0.%d" % i, 9999, self.version, 0)
             r.add_contact(contact)
         # Sanity check of the replacement cache.
         self.assertEqual(len(r._replacement_cache[0]), 20)
-        self.assertEqual('20', r._replacement_cache[0][0].network_id)
+        self.assertEqual(hex(20), r._replacement_cache[0][0].network_id)
         # Create a new contact that will be added to the replacement cache.
-        new_contact = PeerNode('40', "192.168.0.20", 9999, self.version, 0)
+        new_contact = PeerNode(40, "192.168.0.20", 9999, self.version, 0)
         r.add_contact(new_contact)
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(new_contact, r._replacement_cache[0][19])
-        self.assertEqual('21', r._replacement_cache[0][0].network_id)
+        self.assertEqual(hex(21), r._replacement_cache[0][0].network_id)
 
     def test_add_contact_with_existing_contact_in_replacement_cache(self):
         """
@@ -306,31 +291,30 @@ class TestRoutingTable(unittest.TestCase):
         exists in the replacement cache then it is bumped to the most recent
         position.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
-            contact = PeerNode(str(i), '192.168.0.%d' % i, 9999, self.version,
-                               0)
+            contact = PeerNode(i, '192.168.0.%d' % i, 9999, self.version, 0)
             r.add_contact(contact)
         # Sanity check of the replacement cache.
         self.assertEqual(len(r._replacement_cache[0]), 20)
-        self.assertEqual('20', r._replacement_cache[0][0].network_id)
+        self.assertEqual(hex(20), r._replacement_cache[0][0].network_id)
         # Create a new contact that will be added to the replacement cache.
-        new_contact = PeerNode('20', '192.168.0.20', 9999, self.version, 0)
+        new_contact = PeerNode(20, '192.168.0.20', 9999, self.version, 0)
         r.add_contact(new_contact)
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(new_contact, r._replacement_cache[0][19])
-        self.assertEqual('21', r._replacement_cache[0][0].network_id)
+        self.assertEqual(hex(21), r._replacement_cache[0][0].network_id)
 
     def test_add_contact_id_out_of_range(self):
         """
         Ensures a PeerNode with an out-of-range id cannot be added to the
         routing table.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             # id too small
             contact = PeerNode(-1, '192.168.0.1', 9999, self.version, 0)
             r.add_contact(contact)
@@ -344,7 +328,7 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures K number of closest nodes get returned.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
@@ -357,7 +341,7 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures that all close nodes are returned if their number is < K.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(10):
@@ -371,14 +355,14 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that nodes are returned from neighbouring k-buckets if the
         k-bucket containing the referenced ID doesn't contain K entries.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(512):
             contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
                                0)
             r.add_contact(contact)
-        result = r.find_close_nodes(long_to_hex(2 ** 256))
+        result = r.find_close_nodes(hex(2 ** 256))
         self.assertEqual(constants.K, len(result))
 
     def test_find_close_nodes_exclude_contact(self):
@@ -386,7 +370,7 @@ class TestRoutingTable(unittest.TestCase):
         Ensure that nearest nodes are returned except for the specified
         excluded node.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(20):
@@ -400,14 +384,14 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that the nearest nodes are returned in the correct order: from
         the node closest to the target key to the node furthest away.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(512):
             contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
                                0)
             r.add_contact(contact)
-        target_key = long_to_hex(2 ** 256)
+        target_key = hex(2 ** 256)
         result = r.find_close_nodes(target_key)
         self.assertEqual(constants.K, len(result))
 
@@ -424,11 +408,11 @@ class TestRoutingTable(unittest.TestCase):
         """
         Ensures that the correct contact is returned.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
         r.add_contact(contact1)
-        result = r.get_contact('a')
+        result = r.get_contact('0xa')
         self.assertEqual(contact1, result)
 
     def test_get_contact_does_not_exist(self):
@@ -436,17 +420,17 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that a ValueError is returned if the referenced contact does
         not exist in the routing table.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
         r.add_contact(contact1)
-        self.assertRaises(ValueError, r.get_contact, 'b')
+        self.assertRaises(ValueError, r.get_contact, '0xb')
 
     def test_get_refresh_list(self):
         """
         Ensures that only keys from stale k-buckets are returned.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         bucket1 = Bucket(1, 2)
         # Set the lastAccessed flag on bucket 1 to be out of date
@@ -458,14 +442,14 @@ class TestRoutingTable(unittest.TestCase):
         expected = 1
         result = r.get_refresh_list(0)
         self.assertEqual(1, len(result))
-        self.assertEqual(expected, int(result[0].encode('hex'), 16))
+        self.assertEqual(expected, int(result[0], 0))
 
     def test_get_forced_refresh_list(self):
         """
         Ensures that keys from all k-buckets (no matter if they're stale or
         not) are returned.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         bucket1 = Bucket(1, 2)
         # Set the lastAccessed flag on bucket 1 to be out of date
@@ -478,18 +462,18 @@ class TestRoutingTable(unittest.TestCase):
         # Even though bucket 2 is not stale it still has a key for it in
         # the result.
         self.assertEqual(2, len(result))
-        self.assertEqual(1, int(result[0].encode('hex'), 16))
-        self.assertEqual(2, int(result[1].encode('hex'), 16))
+        self.assertEqual(1, int(result[0], 0))
+        self.assertEqual(2, int(result[1], 0))
 
     def test_remove_contact(self):
         """
         Ensures that a contact is removed, given that it's failedRPCs counter
         exceeds or is equal to constants.ALLOWED_RPC_FAILS
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('b', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
         r.add_contact(contact1)
         # contact2 will have the wrong number of failedRPCs
         r.add_contact(contact2)
@@ -497,7 +481,7 @@ class TestRoutingTable(unittest.TestCase):
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 2)
 
-        r.remove_contact('b')
+        r.remove_contact('0xb')
         self.assertEqual(len(r._buckets[0]), 1)
         self.assertEqual(contact1, r._buckets[0]._contacts[0])
 
@@ -506,13 +490,13 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that attempting to remove a non-existent contact results in a
         ValueError exception.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
         r.add_contact(contact1)
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 1)
-        result = r.remove_contact('b')
+        result = r.remove_contact('0xb')
         self.assertEqual(None, result)
         self.assertEqual(len(r._buckets[0]), 1)
         self.assertEqual(contact1, r._buckets[0]._contacts[0])
@@ -522,22 +506,22 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that the removed contact is replaced by the most up-to-date
         contact in the affected k-bucket's cache.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('b', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
         r.add_contact(contact1)
         # contact2 will have the wrong number of failedRPCs
         r.add_contact(contact2)
         contact2.failed_RPCs = constants.ALLOWED_RPC_FAILS
         # Add something into the cache.
-        contact3 = PeerNode('c', '192.168.0.3', 9999, self.version, 0)
+        contact3 = PeerNode('0xc', '192.168.0.3', 9999, self.version, 0)
         r._replacement_cache[0] = [contact3, ]
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 2)
         self.assertEqual(len(r._replacement_cache[0]), 1)
 
-        r.remove_contact('b')
+        r.remove_contact('0xb')
         self.assertEqual(len(r._buckets[0]), 2)
         self.assertEqual(contact1, r._buckets[0]._contacts[0])
         self.assertEqual(contact3, r._buckets[0]._contacts[1])
@@ -548,16 +532,16 @@ class TestRoutingTable(unittest.TestCase):
         Ensures that the contact is not removed if it's failedRPCs counter is
         less than constants.ALLOWED_RPC_FAILS
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('b', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
         r.add_contact(contact1)
         r.add_contact(contact2)
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 2)
 
-        r.remove_contact('b')
+        r.remove_contact('0xb')
         self.assertEqual(len(r._buckets[0]), 2)
 
     def test_remove_contact_with_not_enough_RPC_but_forced(self):
@@ -566,16 +550,16 @@ class TestRoutingTable(unittest.TestCase):
         being less than constants.ALLOWED_RPC_FAILS because the 'forced' flag
         is used.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('b', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
         r.add_contact(contact1)
         r.add_contact(contact2)
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 2)
 
-        r.remove_contact('b', forced=True)
+        r.remove_contact('0xb', forced=True)
         self.assertEqual(len(r._buckets[0]), 1)
 
     def test_remove_contact_removes_from_replacement_cache(self):
@@ -584,10 +568,10 @@ class TestRoutingTable(unittest.TestCase):
         from the replacement_cache that would otherwise be another route for
         it to be re-added to the routing table.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('a', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('b', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
         r.add_contact(contact1)
         r.add_contact(contact2)
         r._replacement_cache[0] = []
@@ -596,21 +580,21 @@ class TestRoutingTable(unittest.TestCase):
         self.assertEqual(len(r._buckets[0]), 2)
         self.assertEqual(len(r._replacement_cache[0]), 1)
 
-        r.remove_contact('b', forced=True)
+        r.remove_contact('0xb', forced=True)
         self.assertEqual(len(r._buckets[0]), 1)
-        self.assertNotIn(contact2, r._replacement_cache)
+        self.assertNotIn(contact2, r._replacement_cache[0])
 
     def test_touch_bucket(self):
         """
         Ensures that the lastAccessed field of the affected k-bucket is updated
         appropriately.
         """
-        parent_node_id = 'abc'
+        parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         # At this point the single k-bucket in the routing table will have a
         # lastAccessed time of 0 (zero). Sanity check.
         self.assertEqual(0, r._buckets[0].last_accessed)
         # Since all keys are in the range of the single k-bucket any key will
         # do for the purposes of testing.
-        r.touch_bucket('xyz')
+        r.touch_bucket('0xabc')
         self.assertNotEqual(0, r._buckets[0].last_accessed)
