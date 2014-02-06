@@ -5,6 +5,7 @@ represented by dict objects.
 """
 import time
 import base64
+import copy
 from Crypto.Hash import SHA512
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
@@ -35,7 +36,7 @@ def verify_message(message):
     Returns a boolean to indicate if the message can be verified.
     """
     try:
-        msg_no_sig = message.copy()
+        msg_no_sig = copy.deepcopy(message)
         raw_sig = msg_no_sig['_p4p2p']['signature']
         signature = base64.decodebytes(raw_sig.encode('utf-8'))
         public_key = RSA.importKey(msg_no_sig['_p4p2p']['public_key'])
@@ -69,6 +70,8 @@ def _get_hash(obj):
         seed = ''.join(hash_list)
     elif obj_type is bool:
         seed = str(obj).lower()
+    elif obj_type is float:
+        seed = repr(obj)
     elif obj is None:
         seed = 'null'
     else:

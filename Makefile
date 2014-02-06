@@ -14,6 +14,7 @@ all:
 clean:
 	rm -rf dist docs/_build p4p2p/p4p2p.egg-info .coverage
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -print0 | $(XARGS) rm
+	find . \( -name '*.bak' -o -name dropin.cache \) -print0 | $(XARGS) rm
 	find . \( -name '*.tgz' -o -name dropin.cache \) -print0 | $(XARGS) rm
 
 pyflakes:
