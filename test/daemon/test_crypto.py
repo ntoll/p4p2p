@@ -2,138 +2,134 @@
 """
 Ensures the cryptographic signing and related functions work as expected.
 """
-from p4p2p.daemon.crypto import (get_signed_message, verify_message,
-                                 _get_hash)
+from p4p2p.daemon.crypto import (get_signed_item, verify_item, _get_hash)
 from hashlib import sha512
+from .keys import PRIVATE_KEY, PUBLIC_KEY, BAD_PUBLIC_KEY
 import unittest
 import uuid
 
 
-# Useful throw-away constants for testing purposes.
-PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQC+n3Au1cbSkjCVsrfnTbmA0SwQLN2RbbDIMHILA1i6wByXkqEa
-mnEBvgsOkUUrsEXYtt0vb8Qill4LSs9RqTetSCjGb+oGVTKizfbMbGCKZ8fT64ZZ
-gan9TvhItl7DAwbIXcyvQ+b1J7pHaytAZwkSwh+M6WixkMTbFM91fW0mUwIDAQAB
-AoGBAJvBENvj5wH1W2dl0ShY9MLRpuxMjHogo3rfQr/G60AkavhaYfKn0MB4tPYh
-MuCgtmF+ATqaWytbq9oUNVPnLUqqn5M9N86+Gb6z8ld+AcR2BD8oZ6tQaiEIGzmi
-L9AWEZZnyluDSHMXDoVrvDLxPpKW0yPjvQfWN15QF+H79faJAkEA0hgdueFrZf3h
-os59ukzNzQy4gjL5ea35azbQt2jTc+lDOu+yjUic2O7Os7oxnSArpujDiOkYgaih
-Dny+/bIgLQJBAOhGKjhpafdpgpr/BjRlmUHXLaa+Zrp/S4RtkIEkE9XXkmQjvVZ3
-EyN/h0IVNBv45lDK0Qztjic0L1GON62Z8H8CQAcRkqZ3ZCKpWRceNXK4NNBqVibj
-SiuC4/psfLc/CqZCueVYvTwtrkFKP6Aiaprrwyw5dqK7nPx3zPtszQxCGv0CQQDK
-51BGiz94VAE1qQYgi4g/zdshSD6xODYd7yBGz99L9M77D4V8nPRpFCRyA9fLf7ii
-ZyoLYxHFCX80fUoCKvG9AkEAyX5iCi3aoLYd/CvOFYB2fcXzauKrhopS7/NruDk/
-LluSlW3qpi1BGDHVTeWWj2sm30NAybTHjNOX7OxEZ1yVwg==
------END RSA PRIVATE KEY-----"""
-
-
-PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+n3Au1cbSkjCVsrfnTbmA0SwQ
-LN2RbbDIMHILA1i6wByXkqEamnEBvgsOkUUrsEXYtt0vb8Qill4LSs9RqTetSCjG
-b+oGVTKizfbMbGCKZ8fT64ZZgan9TvhItl7DAwbIXcyvQ+b1J7pHaytAZwkSwh+M
-6WixkMTbFM91fW0mUwIDAQAB
------END PUBLIC KEY-----"""
-
-
-BAD_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
-HELLOA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+n3Au1cbSkjCVsrfnTbmA0SwQ
-LN2RbbDIMHILA1i6wByXkqEamnEBvgsOkUUrsEXYtt0vb8Qill4LSs9RqTetSCjG
-b+oGVTKizfbMbGCKZ8fT64ZZgan9TvhItl7DAwbIXcyvQ+b1J7pHaytAZwkSwh+M
-6WixkMTbFM91fW0mUwIDAQAB
------END PUBLIC KEY-----"""
-
-
-class TestGetSignedMessage(unittest.TestCase):
+class TestGetSignedItem(unittest.TestCase):
     """
-    Ensures the p4p2p.daemon.crypto._get_signed_message functoin works as
+    Ensures the p4p2p.daemon.crypto._get_signed_item function works as
     expected.
     """
 
     def test_expected_metadata(self):
         """
-        Ensure the message (dict) returned from the function contains the
+        Ensure the item (dict) returned from the function contains the
         expected metadata.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        signed_message = get_signed_message(message, PUBLIC_KEY, PRIVATE_KEY)
-        self.assertIn('_p4p2p', signed_message)
-        metadata = signed_message['_p4p2p']
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        self.assertIn('_p4p2p', signed_item)
+        metadata = signed_item['_p4p2p']
         self.assertIn('timestamp', metadata)
         self.assertIsInstance(metadata['timestamp'], float)
+        self.assertIn('expires', metadata)
+        self.assertIsInstance(metadata['expires'], float)
+        self.assertIn('version', metadata)
+        self.assertIsInstance(metadata['version'], str)
         self.assertIn('public_key', metadata)
         self.assertIsInstance(metadata['public_key'], str)
         self.assertIn('signature', metadata)
         self.assertIsInstance(metadata['signature'], str)
-        self.assertEqual(3, len(metadata))
+        self.assertEqual(5, len(metadata))
 
-    def test_original_message_unaffected(self):
+    def test_expires(self):
         """
-        Ensure the message (dict) passed into the function is not changed.
+        Ensure the expires argument is handled and checked appropriately.
+
+        * If it's not passed the expires metadata defaults to 0.0.
+        * It must be a number (int or float).
+        * It must be > 0
+        * The "expires" metadata must == timestamp + passed in expires arg.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        get_signed_message(message, PUBLIC_KEY, PRIVATE_KEY)
-        self.assertNotIn('_p4p2p', message)
-        self.assertEqual(2, len(message))
-        self.assertIn('foo', message)
-        self.assertIn('baz', message)
-        self.assertEqual(message['foo'], 'bar')
-        self.assertEqual(message['baz'], [1, 2, 3])
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        self.assertEqual(0.0, signed_item['_p4p2p']['expires'])
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY, 'foo')
+        self.assertEqual(0.0, signed_item['_p4p2p']['expires'])
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY, 123)
+        self.assertEqual(signed_item['_p4p2p']['timestamp'] + 123,
+                         signed_item['_p4p2p']['expires'])
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY, 123.456)
+        self.assertEqual(signed_item['_p4p2p']['timestamp'] + 123.456,
+                         signed_item['_p4p2p']['expires'])
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY, -1)
+        self.assertEqual(0.0, signed_item['_p4p2p']['expires'])
 
-    def test_signed_message_is_verifiable(self):
+    def test_original_item_unaffected(self):
         """
-        Check that the resulting message is able to be verified.
+        Ensure the item (dict) passed into the function is not changed.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        signed_message = get_signed_message(message, PUBLIC_KEY, PRIVATE_KEY)
-        self.assertTrue(verify_message(signed_message))
+        get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        self.assertNotIn('_p4p2p', item)
+        self.assertEqual(2, len(item))
+        self.assertIn('foo', item)
+        self.assertIn('baz', item)
+        self.assertEqual(item['foo'], 'bar')
+        self.assertEqual(item['baz'], [1, 2, 3])
+
+    def test_signed_item_is_verifiable(self):
+        """
+        Check that the resulting item is able to be verified.
+        """
+        item = {
+            'foo': 'bar',
+            'baz': [1, 2, 3]
+        }
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        self.assertTrue(verify_item(signed_item))
 
 
-class TestVerifyMessage(unittest.TestCase):
+class TestVerifyItem(unittest.TestCase):
     """
-    Ensures the p4p2p.daemon.crypto.verify_message function works as expected.
+    Ensures the p4p2p.daemon.crypto.verify_item function works as expected.
     """
 
-    def test_good_message(self):
+    def test_good_item(self):
         """
         The good case should pass.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        signed_message = get_signed_message(message, PUBLIC_KEY, PRIVATE_KEY)
-        self.assertTrue(verify_message(signed_message))
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        self.assertTrue(verify_item(signed_item))
 
-    def test_malformed_message(self):
+    def test_malformed_item(self):
         """
         Does not contain the expected _p4p2p metadata.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        self.assertFalse(verify_message(message))
+        self.assertFalse(verify_item(item))
 
-    def test_modified_message(self):
+    def test_modified_item(self):
         """
-        The content of the message do not match the hash / signature.
+        The content of the item does not match the hash / signature.
         """
-        message = {
+        item = {
             'foo': 'bar',
             'baz': [1, 2, 3]
         }
-        signed_message = get_signed_message(message, PUBLIC_KEY, PRIVATE_KEY)
-        signed_message['_p4p2p']['public_key'] = BAD_PUBLIC_KEY
-        self.assertFalse(verify_message(message))
+        signed_item = get_signed_item(item, PUBLIC_KEY, PRIVATE_KEY)
+        signed_item['_p4p2p']['public_key'] = BAD_PUBLIC_KEY
+        self.assertFalse(verify_item(item))
 
 
 class TestGetHashFunction(unittest.TestCase):
@@ -144,7 +140,7 @@ class TestGetHashFunction(unittest.TestCase):
     def test_get_hash_dict(self):
         """
         Ensures that the dict is hashed in such a way that the keys are
-        sorted so the hashes used in the correct order.
+        sorted so the resulting leaf hashes are used in the correct order.
         """
         to_hash = {}
         for i in range(5):
@@ -205,14 +201,6 @@ class TestGetHashFunction(unittest.TestCase):
         actual = _get_hash(False)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
-    def test_get_hash_int(self):
-        """
-        Ensure int values are hashed correctly.
-        """
-        expected = sha512(b'12345')
-        actual = _get_hash(12345)
-        self.assertEqual(expected.hexdigest(), actual.hexdigest())
-
     def test_get_hash_float(self):
         """
         Ensure float values are hashed correctly.
@@ -221,23 +209,15 @@ class TestGetHashFunction(unittest.TestCase):
         actual = _get_hash(12345.6789)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
-    def test_get_hash_long(self):
+    def test_get_hash_int(self):
         """
-        Ensure long values are hashed correctly.
+        Ensure integer values are hashed correctly.
         """
         expected = sha512(b'1234567890987654321234567890987654321')
         actual = _get_hash(1234567890987654321234567890987654321)
         self.assertEqual(expected.hexdigest(), actual.hexdigest())
 
     def test_get_hash_str(self):
-        """
-        Strings are hashed correctly
-        """
-        expected = sha512(b'foo')
-        actual = _get_hash('foo')
-        self.assertEqual(expected.hexdigest(), actual.hexdigest())
-
-    def test_get_hash_unicode(self):
         """
         Strings are hashed correctly
         """
@@ -261,7 +241,7 @@ class TestGetHashFunction(unittest.TestCase):
             'baz': child_dict
         }
         seed_hashes = []
-        # REMEMBER - dict objects are ordered by key.
+        # REMEMBER - in this algorithm the keys to a dict object are ordered.
         seed_hashes.append(sha512(b'baz').hexdigest())
         seed_hashes.append(_get_hash(child_dict).hexdigest())
         seed_hashes.append(sha512(b'foo').hexdigest())

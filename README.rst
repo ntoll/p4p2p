@@ -13,6 +13,8 @@ There's not a lot here right now.
 Developer Setup
 +++++++++++++++
 
+This project requires Python version 3.3 (or higher).
+
 Make a new virtualenv (see:
 http://virtualenvwrapper.readthedocs.org/en/latest/)::
 
