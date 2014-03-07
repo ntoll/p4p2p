@@ -2,7 +2,7 @@
 """
 Ensures the cryptographic signing and related functions work as expected.
 """
-from p4p2p.daemon.crypto import (get_signed_item, verify_item, _get_hash)
+from p4p2p.dht.crypto import get_signed_item, verify_item, _get_hash
 from hashlib import sha512
 from .keys import PRIVATE_KEY, PUBLIC_KEY, BAD_PUBLIC_KEY
 import unittest

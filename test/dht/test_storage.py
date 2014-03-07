@@ -4,7 +4,7 @@ Ensures datastore related classes work as expected.
 """
 import unittest
 import time
-from p4p2p.daemon.storage import DataStore, DictDataStore
+from p4p2p.dht.storage import DataStore, DictDataStore
 from unittest.mock import MagicMock
 from .keys import PUBLIC_KEY
 

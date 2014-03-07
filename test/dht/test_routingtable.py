@@ -3,11 +3,11 @@
 Ensures the routing table (a binary tree used to link buckets with key ranges
 in the DHT) works as expected.
 """
-from p4p2p.daemon.routingtable import RoutingTable
-from p4p2p.daemon.contact import PeerNode
-from p4p2p.daemon.bucket import Bucket
-from p4p2p.daemon import constants
-from p4p2p.daemon.utils import distance
+from p4p2p.dht.routingtable import RoutingTable
+from p4p2p.dht.contact import PeerNode
+from p4p2p.dht.bucket import Bucket
+from p4p2p.dht.utils import distance
+from p4p2p.dht import constants
 from p4p2p.version import get_version
 import unittest
 import time

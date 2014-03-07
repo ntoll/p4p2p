@@ -3,9 +3,9 @@
 Ensures the generic functions used in various places within the daemon work
 as expected.
 """
-from p4p2p.daemon.utils import distance, sort_peer_nodes
-from p4p2p.daemon.contact import PeerNode
-from p4p2p.daemon import constants
+from p4p2p.dht.utils import distance, sort_peer_nodes
+from p4p2p.dht.contact import PeerNode
+from p4p2p.dht import constants
 from p4p2p.version import get_version
 import unittest
 

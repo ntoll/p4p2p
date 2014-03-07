@@ -2,9 +2,9 @@
 """
 Ensures the kbucket (used to store contacts in the network) works as expected.
 """
-from p4p2p.daemon.bucket import Bucket, BucketFull
-from p4p2p.daemon.contact import PeerNode
-from p4p2p.daemon.constants import K
+from p4p2p.dht.bucket import Bucket, BucketFull
+from p4p2p.dht.contact import PeerNode
+from p4p2p.dht.constants import K
 import unittest
 
 

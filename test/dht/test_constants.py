@@ -2,7 +2,7 @@
 """
 Ensures the DHT implementation has the required constants defined
 """
-from p4p2p.daemon import constants
+from p4p2p.dht import constants
 import unittest
 
 
