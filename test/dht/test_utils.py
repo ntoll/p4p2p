@@ -7,6 +7,7 @@ from p4p2p.dht.utils import distance, sort_peer_nodes
 from p4p2p.dht.contact import PeerNode
 from p4p2p.dht import constants
 from p4p2p.version import get_version
+from .keys import PUBLIC_KEY
 import unittest
 
 
@@ -39,8 +40,9 @@ class TestUtils(unittest.TestCase):
         """
         contacts = []
         for i in range(512):
-            contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(2 ** i)
             contacts.append(contact)
         target_key = hex(2 ** 256)
         result = sort_peer_nodes(contacts, target_key)
@@ -61,8 +63,9 @@ class TestUtils(unittest.TestCase):
         """
         contacts = []
         for i in range(512):
-            contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(2 ** i)
             contacts.append(contact)
         target_key = hex(2 ** 256)
         result = sort_peer_nodes(contacts, target_key)

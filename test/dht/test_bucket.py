@@ -5,6 +5,7 @@ Ensures the kbucket (used to store contacts in the network) works as expected.
 from p4p2p.dht.bucket import Bucket, BucketFull
 from p4p2p.dht.contact import PeerNode
 from p4p2p.dht.constants import K
+from .keys import PUBLIC_KEY
 import unittest
 
 
@@ -41,11 +42,13 @@ class TestBucket(unittest.TestCase):
         range_min = 12345
         range_max = 98765
         bucket = Bucket(range_min, range_max)
-        contact1 = PeerNode("1", "192.168.0.1", 9999, 123)
+        contact1 = PeerNode(PUBLIC_KEY, "192.168.0.1", 9999, 123)
+        contact1.network_id = hex(1)
         bucket.add_contact(contact1)
         self.assertEqual(1, len(bucket._contacts),
                          "Single contact not added to k-bucket.")
-        contact2 = PeerNode("2", "192.168.0.2", 8888, 123)
+        contact2 = PeerNode(PUBLIC_KEY, "192.168.0.2", 8888, 123)
+        contact2.network_id = hex(2)
         bucket.add_contact(contact2)
         self.assertEqual(2, len(bucket._contacts),
                          "K-bucket's contact list not the expected length.")
@@ -98,10 +101,11 @@ class TestBucket(unittest.TestCase):
         range_max = 98765
         bucket = Bucket(range_min, range_max)
         for i in range(K):
-            contact = PeerNode("%d" % i, "192.168.0.%d" % i, 9999, 123)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999, 123)
+            contact.network_id = hex(i)
             bucket.add_contact(contact)
         for i in range(K):
-            self.assertTrue(bucket.get_contact("%d" % i),
+            self.assertTrue(bucket.get_contact(hex(i)),
                             "Could not get contact with id %d" % i)
 
     def test_get_contact_with_bad_id(self):
@@ -179,13 +183,13 @@ class TestBucket(unittest.TestCase):
         range_max = 98765
         bucket = Bucket(range_min, range_max)
         for i in range(K):
-            contact = PeerNode("%d" % i, "192.168.0.%d" % i, 9999, 123)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999, 123)
+            contact.network_id = hex(i)
             bucket.add_contact(contact)
         for i in range(K):
-            id = "%d" % i
-            bucket.remove_contact(id)
-            self.assertFalse(id in bucket._contacts,
-                             "Could not remove contact with id %d" % i)
+            bucket.remove_contact(hex(i))
+            self.assertFalse(hex(i) in bucket._contacts,
+                             "Could not remove contact with id %s" % hex(i))
 
     def test_remove_contact_with_bad_id(self):
         """

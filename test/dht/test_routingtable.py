@@ -12,6 +12,7 @@ from p4p2p.version import get_version
 import unittest
 import time
 from mock import MagicMock
+from .keys import PUBLIC_KEY
 
 
 class TestRoutingTable(unittest.TestCase):
@@ -92,8 +93,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Populate the routing table with contacts.
         for i in range(512):
-            contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(2 ** i)
             r.add_contact(contact)
         with self.assertRaises(ValueError):
             # Incoming id that's too small.
@@ -123,13 +125,17 @@ class TestRoutingTable(unittest.TestCase):
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         bucket = Bucket(0, 100)
-        contact1 = PeerNode(20, '192.168.0.1', 9999, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, 0)
+        contact1.network_id = hex(20)
         bucket.add_contact(contact1)
-        contact2 = PeerNode(40, '192.168.0.2', 8888, 0)
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 8888, 0)
+        contact2.network_id = hex(40)
         bucket.add_contact(contact2)
-        contact3 = PeerNode(60, '192.168.0.3', 8888, 0)
+        contact3 = PeerNode(PUBLIC_KEY, '192.168.0.3', 8888, 0)
+        contact3.network_id = hex(60)
         bucket.add_contact(contact3)
-        contact4 = PeerNode(80, '192.168.0.4', 8888, 0)
+        contact4 = PeerNode(PUBLIC_KEY, '192.168.0.4', 8888, 0)
+        contact4.network_id = hex(80)
         bucket.add_contact(contact4)
         r._buckets[0] = bucket
         # Sanity check
@@ -181,7 +187,7 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact = PeerNode('0xdeadbeef', '192.168.0.1', 9999, 0)
+        contact = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, 0)
         r.remove_contact = MagicMock()
         r.blacklist(contact)
         r.remove_contact.called_once_with(contact, True)
@@ -194,7 +200,8 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact = PeerNode('0xdeadbeef', '192.168.0.1', 9999, 0)
+        contact = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, 0)
+        contact.network_id = parent_node_id
         r.add_contact(contact)
         self.assertEqual(len(r._buckets[0]), 0)
 
@@ -205,8 +212,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode(2, '192.168.0.1', 9999, 0)
-        contact2 = PeerNode(4, '192.168.0.2', 9999, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, 0)
+        contact1.network_id = hex(2)
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, 0)
+        contact2.network_id = hex(4)
         r.blacklist(contact2)
         r.add_contact(contact1)
         self.assertEqual(len(r._buckets[0]), 1)
@@ -220,8 +229,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode(2, '192.168.0.1', 9999, 0)
-        contact2 = PeerNode(4, '192.168.0.2', 9999, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, 0)
+        contact1.network_id = hex(2)
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, 0)
+        contact2.network_id = hex(4)
         r.add_contact(contact1)
         self.assertEqual(len(r._buckets[0]), 1)
         r.add_contact(contact2)
@@ -235,11 +246,14 @@ class TestRoutingTable(unittest.TestCase):
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
         for i in range(20):
-            contact = PeerNode(i, '192.168.0.%d' % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, '192.168.0.%d' % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         # This id will be just over the max range for the bucket in position 0
-        large_id = ((2 ** 512) / 2) + 1
-        contact = PeerNode(large_id, '192.168.0.33', 9999, self.version, 0)
+        contact = PeerNode(PUBLIC_KEY, '192.168.0.33', 9999, self.version, 0)
+        large_id = int(((2 ** 512) / 2) + 1)
+        contact.network_id = hex(large_id)
         r.add_contact(contact)
         self.assertEqual(len(r._buckets), 2)
         self.assertEqual(len(r._buckets[0]), 20)
@@ -254,10 +268,13 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket
         for i in range(20):
-            contact = PeerNode(i, '192.168.0.%d' % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, '192.168.0.%d' % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         # Create a new contact that will be added to the replacement cache.
-        contact = PeerNode(20, '192.168.0.20', 9999, self.version, 0)
+        contact = PeerNode(PUBLIC_KEY, '192.168.0.20', 9999, self.version, 0)
+        contact.network_id = hex(20)
         r.add_contact(contact)
         self.assertEqual(len(r._buckets[0]), 20)
         self.assertTrue(0 in r._replacement_cache)
@@ -273,13 +290,17 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
-            contact = PeerNode(i, "192.168.0.%d" % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         # Sanity check of the replacement cache.
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(hex(20), r._replacement_cache[0][0].network_id)
         # Create a new contact that will be added to the replacement cache.
-        new_contact = PeerNode(40, "192.168.0.20", 9999, self.version, 0)
+        new_contact = PeerNode(PUBLIC_KEY, "192.168.0.20", 9999, self.version,
+                               0)
+        new_contact.network_id = hex(40)
         r.add_contact(new_contact)
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(new_contact, r._replacement_cache[0][19])
@@ -295,34 +316,21 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
-            contact = PeerNode(i, '192.168.0.%d' % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, '192.168.0.%d' % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         # Sanity check of the replacement cache.
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(hex(20), r._replacement_cache[0][0].network_id)
         # Create a new contact that will be added to the replacement cache.
-        new_contact = PeerNode(20, '192.168.0.20', 9999, self.version, 0)
+        new_contact = PeerNode(PUBLIC_KEY, '192.168.0.20', 9999, self.version,
+                               0)
+        new_contact.network_id = hex(20)
         r.add_contact(new_contact)
         self.assertEqual(len(r._replacement_cache[0]), 20)
         self.assertEqual(new_contact, r._replacement_cache[0][19])
         self.assertEqual(hex(21), r._replacement_cache[0][0].network_id)
-
-    def test_add_contact_id_out_of_range(self):
-        """
-        Ensures a PeerNode with an out-of-range id cannot be added to the
-        routing table.
-        """
-        parent_node_id = '0xdeadbeef'
-        r = RoutingTable(parent_node_id)
-        with self.assertRaises(ValueError):
-            # id too small
-            contact = PeerNode(-1, '192.168.0.1', 9999, self.version, 0)
-            r.add_contact(contact)
-        with self.assertRaises(ValueError):
-            # id too big
-            big_id = (2 ** 512)
-            contact = PeerNode(big_id, '192.168.0.1', 9999, self.version, 0)
-            r.add_contact(contact)
 
     def test_find_close_nodes_single_bucket(self):
         """
@@ -332,7 +340,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(40):
-            contact = PeerNode(i, "192.168.0.%d" % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         result = r.find_close_nodes(hex(1))
         self.assertEqual(constants.K, len(result))
@@ -345,7 +355,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(10):
-            contact = PeerNode(i, "192.168.0.%d" % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         result = r.find_close_nodes(hex(1))
         self.assertEqual(10, len(result))
@@ -359,8 +371,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(512):
-            contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(2 ** i)
             r.add_contact(contact)
         result = r.find_close_nodes(hex(2 ** 256))
         self.assertEqual(constants.K, len(result))
@@ -374,7 +387,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(20):
-            contact = PeerNode(i, "192.168.0.%d" % i, 9999, self.version, 0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(i)
             r.add_contact(contact)
         result = r.find_close_nodes(hex(1), network_id=contact.network_id)
         self.assertEqual(constants.K - 1, len(result))
@@ -388,8 +403,9 @@ class TestRoutingTable(unittest.TestCase):
         r = RoutingTable(parent_node_id)
         # Fill up the bucket and replacement cache
         for i in range(512):
-            contact = PeerNode(2 ** i, "192.168.0.%d" % i, 9999, self.version,
-                               0)
+            contact = PeerNode(PUBLIC_KEY, "192.168.0.%d" % i, 9999,
+                               self.version, 0)
+            contact.network_id = hex(2 ** i)
             r.add_contact(contact)
         target_key = hex(2 ** 256)
         result = r.find_close_nodes(target_key)
@@ -410,7 +426,8 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
         r.add_contact(contact1)
         result = r.get_contact('0xa')
         self.assertEqual(contact1, result)
@@ -422,7 +439,7 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
         r.add_contact(contact1)
         self.assertRaises(ValueError, r.get_contact, '0xb')
 
@@ -472,8 +489,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, self.version, 0)
+        contact2.network_id = '0xb'
         r.add_contact(contact1)
         # contact2 will have the wrong number of failedRPCs
         r.add_contact(contact2)
@@ -487,12 +506,13 @@ class TestRoutingTable(unittest.TestCase):
 
     def test_remove_contact_with_unknown_contact(self):
         """
-        Ensures that attempting to remove a non-existent contact results in a
-        ValueError exception.
+        Ensures that attempting to remove a non-existent contact results in
+        no change.
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
         r.add_contact(contact1)
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 1)
@@ -508,14 +528,17 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, self.version, 0)
+        contact2.network_id = '0xb'
         r.add_contact(contact1)
         # contact2 will have the wrong number of failedRPCs
         r.add_contact(contact2)
         contact2.failed_RPCs = constants.ALLOWED_RPC_FAILS
         # Add something into the cache.
-        contact3 = PeerNode('0xc', '192.168.0.3', 9999, self.version, 0)
+        contact3 = PeerNode(PUBLIC_KEY, '192.168.0.3', 9999, self.version, 0)
+        contact3.network_id = '0x3'
         r._replacement_cache[0] = [contact3, ]
         # Sanity check
         self.assertEqual(len(r._buckets[0]), 2)
@@ -534,8 +557,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, self.version, 0)
+        contact2.network_id = '0xb'
         r.add_contact(contact1)
         r.add_contact(contact2)
         # Sanity check
@@ -552,8 +577,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, self.version, 0)
+        contact2.network_id = '0xb'
         r.add_contact(contact1)
         r.add_contact(contact2)
         # Sanity check
@@ -570,8 +597,10 @@ class TestRoutingTable(unittest.TestCase):
         """
         parent_node_id = '0xdeadbeef'
         r = RoutingTable(parent_node_id)
-        contact1 = PeerNode('0xa', '192.168.0.1', 9999, self.version, 0)
-        contact2 = PeerNode('0xb', '192.168.0.2', 9999, self.version, 0)
+        contact1 = PeerNode(PUBLIC_KEY, '192.168.0.1', 9999, self.version, 0)
+        contact1.network_id = '0xa'
+        contact2 = PeerNode(PUBLIC_KEY, '192.168.0.2', 9999, self.version, 0)
+        contact2.network_id = '0xb'
         r.add_contact(contact1)
         r.add_contact(contact2)
         r._replacement_cache[0] = []
