@@ -10,6 +10,14 @@ from .bucket import BucketFull, Bucket
 from .utils import sort_peer_nodes
 
 
+class RoutingTableEmpty(Exception):
+    """
+    To be fired when a lookup is attempted without any peers in the routing
+    table.
+    """
+    pass
+
+
 class RoutingTable(object):
     """
     From the original Kademlia paper:

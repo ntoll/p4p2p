@@ -2,6 +2,7 @@
 """
 Defines a peer node on the network.
 """
+from hashlib import sha512
 
 
 class PeerNode(object):
@@ -9,18 +10,19 @@ class PeerNode(object):
     Represents another node on the network.
     """
 
-    def __init__(self, network_id, ip_address, port, version, last_seen=0):
+    def __init__(self, public_key, ip_address, port, version, last_seen=0):
         """
-        Initialise the peer node with a unique id within the network, IP
-        address, port, the p4p2p version the contact is running and a
-        timestamp indicating when the last connection was made with the
-        contact (defaults to 0). The network id, if passed in as a numeric
-        value, will be converted into a hexadecimal string.
+        Initialise the peer node with a unique id within the network (derived
+        from its public key), IP address, port the p4p2p version the contact
+        is running and a timestamp indicating when the last connection was
+        made with the contact (defaults to 0).
+
+        The network id is created as the hexdigest of the SHA512 of the public
+        key.
         """
-        if isinstance(network_id, int):
-            self.network_id = hex(network_id)
-        else:
-            self.network_id = network_id
+        hex_digest = sha512(public_key.encode('ascii')).hexdigest()
+        self.network_id = '0x' + hex_digest
+        self.public_key = public_key
         self.ip_address = ip_address
         self.port = port
         self.version = version
@@ -52,8 +54,9 @@ class PeerNode(object):
         """
         Returns a tuple containing information about this contact.
         """
-        return str((self.network_id, self.ip_address, self.port, self.version,
-                    self.last_seen, self.failed_RPCs))
+        return str((self.network_id, self.public_key, self.ip_address,
+                    self.port, self.version, self.last_seen,
+                    self.failed_RPCs))
 
     def __str__(self):
         """
